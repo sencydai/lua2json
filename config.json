@@ -1,0 +1,4 @@
+{
+    "luaFile": "./luaconfig",
+    "jsonFile": "./config"
+}
