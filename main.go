@@ -44,6 +44,7 @@ func main() {
 		fmt.Println(err.Error())
 		return
 	} else {
+		datas := make(map[string]map[string]interface{})
 		for _, file := range files {
 			if file.IsDir() {
 				continue
@@ -70,9 +71,27 @@ func main() {
 			}
 			writer := bytes.NewBuffer([]byte{})
 			json.Indent(writer, buff, "", "\t")
-			file.Write(writer.Bytes())
+			buff = writer.Bytes()
+			file.Write(buff)
 			file.Close()
+
+			value := make(map[string]interface{})
+			if err = json.Unmarshal(buff, &value); err != nil {
+				fmt.Printf("json.Unmarshal error: %v\n", err)
+				continue
+			}
+			datas[strings.TrimSuffix(name, ".lua")] = value
 		}
+
+		file, err := os.Create(fmt.Sprintf("%s/configs.json", config.JsonFile))
+		if err != nil {
+			fmt.Printf("create configs json file error: %s", err.Error())
+			return
+		}
+
+		data, err := json.MarshalIndent(datas, "", " ")
+		file.Write(data)
+		file.Close()
 	}
 
 	fmt.Println("转换完成...")
